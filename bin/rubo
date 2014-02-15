@@ -1,0 +1,78 @@
+#!/usr/bin/env ruby
+# coding: utf-8
+
+lib = File.expand_path('../../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+
+require 'optparse'
+require 'rubo'
+
+options = {
+  adapter: ENV['RUBO_ADAPTER'] || :shell,
+  alias:   ENV['RUBO_ALIAS']   || false,
+  plugins: ENV['RUBO_PLUGINS'] || nil,
+  name:    ENV['RUBO_NAEM']    || 'Rubo',
+}
+
+opts = OptionParser.new do |opts|
+  opts.banner = 'Usage rubo [options]'
+
+  opts.on('-a', '--adapter [ADAPTER]', 'The Adapter to use') do |v|
+    options[:adapter] = v
+  end
+
+  opts.on('-l', '--alias [ALIAS]', 'Enable replacing the robot\'s name with alias') do |v|
+    options[:alias] = v || '/'
+  end
+
+  opts.on('-n', '--name [NAME]', 'The name of the robot in chat') do |v|
+    options[:name] = v
+  end
+
+  opts.on('-r', '--require [PATH]', 'Alternative plugins path') do |v|
+    options[:plugins] ||= ''
+    options[:plugins] += ',' + v.to_s
+  end
+
+  opts.on_tail('-h', '--help', 'Display the help information') do |v|
+    options[:help] = true
+  end
+
+  opts.on_tail('-v', '--version', 'Displays the version of rubo installed') do |v|
+    options[:version] = true
+  end
+end
+
+opts.parse!(ARGV)
+
+if options[:help]
+  puts opts
+  exit
+end
+
+if options[:version]
+  require 'rubo/version'
+  puts "Rubo version: #{Rubo::VERSION}"
+  exit
+end
+
+robot = Rubo.load_bot(
+  options[:adapter],
+  options[:name],
+)
+
+robot.alias_name = options[:alias]
+
+robot.adapter.once(:connected) do
+  robot.load_plugin_gems
+
+  bundled_plugins = Rubo::Plugins.plugins.keys
+  robot.load_plugins(bundled_plugins)
+
+  if options[:plugins]
+    external_plugins = options[:plugins].split(',').reject(&:empty?)
+    robot.load_external_plugins(external_plugins)
+  end
+end
+
+robot.run

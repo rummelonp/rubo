@@ -24,3 +24,9 @@ RSpec.configure do |config|
   #     --seed 1234
   config.order = 'random'
 end
+
+class Null
+  include Rubo::Adaptable
+end
+
+Rubo::Adapters.register :null, Null
