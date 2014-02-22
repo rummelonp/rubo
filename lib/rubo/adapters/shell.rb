@@ -1,5 +1,6 @@
 # coding: utf-8
 
+require 'colorize'
 require 'readline'
 require 'rubo/adaptable'
 require 'rubo/message'
@@ -12,7 +13,7 @@ module Rubo
 
       def send(envelope, *strings)
         strings.each do |str|
-          puts "\x1b[01;32m#{str}\x1b[0m"
+          puts str.colorize(:green)
         end
       end
 
