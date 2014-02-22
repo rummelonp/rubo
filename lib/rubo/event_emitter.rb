@@ -22,7 +22,7 @@ module Rubo
         id: id,
         type: type.to_sym,
         listener: block,
-        once: false,
+        once: once,
       )
     end
 
@@ -63,21 +63,25 @@ module Rubo
     # @return [void]
     def emit(type, *args)
       type = type.to_sym
+      fired_events = []
       events.each do |e|
         case e.type
         when type
           listener = e.listener
           if listener
+            fired_events << e if e.once?
             listener.call(*args)
           end
-          remove_listener(e.id)
         when :*
           listener = e.listener
           if listener
+            fired_events << e if e.once?
             listener.call(type, *args)
           end
-          remove_listener(e.id)
         end
+      end
+      fired_events.each do |e|
+        remove_listener(e.id)
       end
     end
 
@@ -93,6 +97,7 @@ module Rubo
       attr_reader :type
       attr_reader :listener
       attr_reader :once
+      alias_method :once?, :once
 
       def initialize(attributes = {})
         attributes.each_pair do |key, value|
