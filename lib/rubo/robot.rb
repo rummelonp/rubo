@@ -185,50 +185,24 @@ module Rubo
       end
     end
 
-    # Loads every gem plugin
-    def load_plugin_gems
-      Gem.refresh
-      Gem::Specification.each do |gem|
-        if gem.name =~ /^rubo-/
-          begin
-            logger.debug "Loading plugin gem \"#{gem.name}\""
-            require gem.name
-          rescue ::LoadError => e
-            logger.warn \
-              "Could not load plugin gem \"#{gem.name}\": #{e.message}\n" +
-              e.backtrace.join("\n")
-          end
-        end
-      end
-    end
-
-    # Loads every plugin in the given names.
-    #
-    # @param plugin_names [Array<Symbol>]
-    # @return [void]
-    def load_plugins(*plugin_names)
-      plugin_names.flatten.each do |plugin_name|
-        logger.debug "Loading plugin \"#{plugin_name}\""
-        Plugins.use(plugin_name, self)
-      end
-    end
-
     # Loads every plugin in the given paths.
     #
     # @param plugin_paths [Array<String>]
     # @return [void]
-    def load_external_plugins(*plugin_paths)
+    def load_plugins(*plugin_paths)
       plugin_paths.flatten.each do |plugin_path|
         plugin_path = File.expand_path(plugin_path)
-        logger.debug "Loading external plugins from \"#{plugin_path}\""
+        next unless File.directory?(plugin_path)
+        logger.debug "Loading plugins from \"#{plugin_path}\""
         Dir[plugin_path + '/**/*.rb'].each do |f|
           begin
             load f
             plugin_name = File.basename(f).sub('.rb', '')
-            load_plugins(plugin_name)
+            logger.debug "Loading plugin \"#{plugin_name}\""
+            Plugins.use(plugin_name, self)
           rescue => e
             logger.error \
-              "Could not load external plugin \"#{f}\": #{e.message}\n" +
+              "Could not load plugin \"#{f}\": #{e.message}\n" +
               e.backtrace.join("\n")
             exit 1
           end
@@ -291,12 +265,6 @@ module Rubo
     end
 
     private
-
-    def setup_logger
-      @logger = Logger.new($stdout)
-      level = (ENV['RUBO_LOG_LEVEL'] || 'info').upcase
-      logger.level = Logger.const_get(level)
-    end
 
     def load_adapter(adapter_name)
       logger.debug "Loading adapter \"#{adapter_name}\""

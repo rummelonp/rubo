@@ -14,18 +14,21 @@ module Rubo
     # @param plugin_name [Symbol]
     # @param robot [Robot]
     # @return [void]
+    # @raise [LoadError]
     def self.use(plugin_name, robot)
-      find(plugin_name).call(robot)
+      plugin = find(plugin_name)
+      unless plugin
+        raise LoadError, "No such plugin \"#{plugin_name}\""
+      end
+      plugin.call(robot)
     end
 
     # Find plugin class from given name
     #
     # @param plugin_name [Symbol]
     # @return [Class<Pluggable>, Proc, #call]
-    # @raise [LoadError]
     def self.find(plugin_name)
-      plugins[plugin_name.to_sym] or
-        raise LoadError, "No such plugin \"#{plugin_name}\""
+      plugins[plugin_name.to_sym]
     end
 
     # Register plugin
@@ -42,8 +45,4 @@ module Rubo
       plugins[plugin_name.to_sym] = plugin_class || block
     end
   end
-end
-
-Dir[File.dirname(__FILE__) + '/plugins/*.rb'].each do |file|
-  require file
 end

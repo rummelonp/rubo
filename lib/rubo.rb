@@ -11,6 +11,25 @@ module Rubo
     Robot.new(adapter_name, bot_name)
   end
 
+  # Loads every external gems of Rubo
+  #
+  # @return [void]
+  def self.load_external_gems
+    Gem.refresh
+    Gem::Specification.each do |gem|
+      if gem.name =~ /^rubo-/
+        begin
+          logger.debug "Loading gem \"#{gem.name}\""
+          require gem.name
+        rescue ::LoadError => e
+          logger.warn \
+            "Could not load gem \"#{gem.name}\": #{e.message}\n" +
+            e.backtrace.join("\n")
+        end
+      end
+    end
+  end
+
   # Returns a shared logger of Rubo
   #
   # @return [Logger]

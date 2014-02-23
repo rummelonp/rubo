@@ -56,6 +56,8 @@ if options[:version]
   exit
 end
 
+Rubo.load_external_gems
+
 robot = Rubo.load_bot(
   options[:adapter],
   options[:name],
@@ -64,14 +66,10 @@ robot = Rubo.load_bot(
 robot.alias_name = options[:alias]
 
 robot.adapter.once(:connected) do
-  robot.load_plugin_gems
-
-  bundled_plugins = Rubo::Plugins.plugins.keys
-  robot.load_plugins(bundled_plugins)
-
+  robot.load_plugins('plugins')
   if options[:plugins]
-    external_plugins = options[:plugins].split(',').reject(&:empty?)
-    robot.load_external_plugins(external_plugins)
+    plugins = options[:plugins].split(',').reject(&:empty?)
+    robot.load_plugins(plugins)
   end
 end
 

@@ -14,18 +14,21 @@ module Rubo
     # @param adapter_name [Symbol]
     # @param robot [Robot]
     # @return [Adaptable]
+    # @raise [LoadError]
     def self.use(adapter_name, robot)
-      find(adapter_name).new(robot)
+      adapter = find(adapter_name)
+      unless adapter
+        raise LoadError, "No such adapter \"#{adapter_name}\""
+      end
+      adapter.new(robot)
     end
 
     # Find adapter class from given name
     #
     # @param adapter_name [Symbol]
     # @return [Class<Adaptable>]
-    # @raise [LoadError]
     def self.find(adapter_name)
-      adapters[adapter_name.to_sym] or
-        raise LoadError, "No such adapter \"#{adapter_name}\""
+      adapters[adapter_name.to_sym]
     end
 
     # Register adapter
