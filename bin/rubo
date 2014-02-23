@@ -11,7 +11,7 @@ options = {
   adapter: ENV['RUBO_ADAPTER'] || :shell,
   alias:   ENV['RUBO_ALIAS']   || false,
   plugins: ENV['RUBO_PLUGINS'] || nil,
-  name:    ENV['RUBO_NAEM']    || 'Rubo',
+  name:    ENV['RUBO_NAME']    || 'Rubo',
 }
 
 opts = OptionParser.new do |opts|
