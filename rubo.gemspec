@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Kazuya Takeshima']
   spec.email         = ['mail@mitukiii.jp']
   spec.summary       = %q{Rubo is a chat bot}
-  spec.homepage      = ''
+  spec.homepage      = 'https://github.com/mitukiii/rubo'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files`.split($/)
