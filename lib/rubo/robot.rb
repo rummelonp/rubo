@@ -27,9 +27,6 @@ module Rubo
     attr_reader :commands
     alias_method :help_commands, :commands
 
-    # @return [Logger]
-    attr_reader :logger
-
     # @return [Symbol, String]
     attr_accessor :alias_name
 
@@ -50,11 +47,17 @@ module Rubo
       @commands       = []
       @listeners      = []
       @error_handlers = []
-      setup_logger
       load_adapter(adapter_name)
       on(:error) do |error, message|
         invoke_error_handlers(error, message)
       end
+    end
+
+    # Returns a shared logger of Rubo
+    #
+    # @return [Logger]
+    def logger
+      Rubo.logger
     end
 
     # Adds a Listener that attempts to match incoming messages based on a Regex.
