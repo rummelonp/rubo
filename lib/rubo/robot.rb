@@ -4,10 +4,10 @@ require 'logger'
 require 'rubo/adapters'
 require 'rubo/brain'
 require 'rubo/error'
+require 'rubo/eval_context'
 require 'rubo/event_emitter'
 require 'rubo/listener'
 require 'rubo/message'
-require 'rubo/plugins'
 require 'rubo/response'
 
 module Rubo
@@ -21,11 +21,6 @@ module Rubo
 
     # @return [Brain]
     attr_reader :brain
-
-    # Help Commands for Running Scripts.
-    # @return [Array<String>]
-    attr_reader :commands
-    alias_method :help_commands, :commands
 
     # @return [Symbol, String]
     attr_accessor :alias_name
@@ -58,6 +53,13 @@ module Rubo
     # @return [Logger]
     def logger
       Rubo.logger
+    end
+
+    # Help Commands for Running Scripts.
+    #
+    # @return [Array<String>]
+    def commands
+      @commands.sort
     end
 
     # Adds a Listener that attempts to match incoming messages based on a Regex.
@@ -185,7 +187,23 @@ module Rubo
       end
     end
 
-    # Loads every plugin in the given paths.
+    # Loads plugin in the given file path.
+    #
+    # @param plugin_path [String]
+    # @return [void]
+    def load_plugin(plugin_path)
+      plugin_name = File.basename(plugin_path).sub('.rb', '')
+      logger.debug "Loading plugin \"#{plugin_name}\""
+      EvalContext.new(self).evaluate(plugin_path)
+      parse_help(plugin_path)
+    rescue => e
+      logger.error \
+      "Could not load plugin \"#{plugin_path}\": #{e.message}\n" +
+        e.backtrace.join("\n")
+      exit 1
+    end
+
+    # Loads every plugin in the given directory paths.
     #
     # @param plugin_paths [Array<String>]
     # @return [void]
@@ -195,27 +213,9 @@ module Rubo
         next unless File.directory?(plugin_path)
         logger.debug "Loading plugins from \"#{plugin_path}\""
         Dir[plugin_path + '/**/*.rb'].each do |f|
-          begin
-            load f
-            plugin_name = File.basename(f).sub('.rb', '')
-            logger.debug "Loading plugin \"#{plugin_name}\""
-            Plugins.use(plugin_name, self)
-          rescue => e
-            logger.error \
-              "Could not load plugin \"#{f}\": #{e.message}\n" +
-              e.backtrace.join("\n")
-            exit 1
-          end
+          load_plugin(f)
         end
       end
-    end
-
-    # Add help info
-    #
-    # @param commands [String]
-    # @return [void]
-    def add_commands(commands)
-      self.commands.concat(commands.split("\n").map(&:strip)).sort!
     end
 
     # A helper send function which delegates to the adapter's send function.
@@ -282,6 +282,23 @@ module Rubo
           logger.error \
             "While invoking error handler: #{e.message}\n" +
             e.backtrace.join("\n")
+        end
+      end
+    end
+
+    def parse_help(f)
+      lines = IO.readlines(f)
+        .grep(/\A#/)
+        .map { |l| l.sub(/\A#/, '') }
+        .select { |l| l.size > 0 }
+      lines.shift if lines.first =~ /coding: .+/
+      current_section = nil
+      lines.each do |line|
+        if line =~ /(\S+):/
+          current_section = $1.downcase.to_sym
+        elsif current_section == :commands
+          command = line.strip
+          @commands << command if command.size > 0
         end
       end
     end
