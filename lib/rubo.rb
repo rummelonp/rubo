@@ -46,7 +46,7 @@ module Rubo
 
   # Set a new logger
   #
-  # @param [Logger]
+  # @param [logger]
   # @return [void]
   def self.logger=(logger)
     @logger = logger
