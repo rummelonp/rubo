@@ -71,6 +71,7 @@ module Rubo
 
     register :twitter, Twitter
 
+    # @private
     class TwitterStreaming
       include EventEmitter
 
