@@ -158,7 +158,7 @@ module Rubo
     # @return [void]
     def catch_all(&block)
       listener = Listener.new(self,
-        ->(message) { message.is_a?(TopicMessage) },
+        ->(message) { message.is_a?(CatchAllMessage) },
         ->(message) do
           message.message = message.message.message
           callback.call(message)
