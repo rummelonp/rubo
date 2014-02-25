@@ -1,3 +1,8 @@
+v0.1.1
+======
+
+* Twitter adapter support
+
 v0.1.0
 ======
 
