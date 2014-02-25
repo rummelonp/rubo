@@ -30,6 +30,9 @@ module Rubo
   # Represents an incoming message from the chat.
   class TextMessage < Message
     # @return [String]
+    attr_reader :id
+
+    # @return [String]
     attr_reader :text
 
     # @param user [User] A User instance that sent the message.
