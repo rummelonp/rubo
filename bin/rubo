@@ -21,6 +21,10 @@ opts = OptionParser.new do |opts|
     options[:adapter] = v
   end
 
+  opts.on('-c', '--create [PATH]', 'Create a deployable rubo') do |v|
+    options[:create] = v
+  end
+
   opts.on('-l', '--alias [ALIAS]', 'Enable replacing the robot\'s name with alias') do |v|
     options[:alias] = v || '/'
   end
@@ -53,6 +57,13 @@ end
 if options[:version]
   require 'rubo/version'
   puts "Rubo version: #{Rubo::VERSION}"
+  exit
+end
+
+if options[:create]
+  require 'rubo/creator'
+  creator = Rubo::Creator.new(options[:create])
+  creator.run
   exit
 end
 

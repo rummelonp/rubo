@@ -1,0 +1,5 @@
+# coding: utf-8
+
+source 'http://rubygems.org'
+
+gem 'rubo', '>= 0.1.0'
