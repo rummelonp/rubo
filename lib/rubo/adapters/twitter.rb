@@ -52,7 +52,7 @@ module Rubo
           robot.logger.info 'Twitter: Connected'
         end
         @bot.connect do |status|
-          robot.logger.info "Twitter: Received \"#{status.text}\"" +
+          robot.logger.info "Twitter: Received \"#{status.text}\" " +
             "from \"#{status.user.screen_name}\""
           user = robot.brain.user_for_id(status.user.id.to_s,
             name: status.user.screen_name,
